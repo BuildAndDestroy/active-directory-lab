@@ -1,0 +1,67 @@
+# Copy this tree to its own git repo. ISOs and disks stay on the hypervisor.
+network:
+  name: ad-lab
+  bridge: virbr-ad
+  mode: nat
+  cidr: 192.168.57.0/24
+  gateway: 192.168.57.1
+  dhcp: false
+
+defaults:
+  ram_mb: 4096
+  vcpus: 2
+  disk_gb: 60
+  cpu_mode: host-passthrough
+  disk_pool: /var/lib/libvirt/images/ad-kvm-lab
+
+guests:
+  - name: dc-corp
+    hostname: DC-CORP
+    role: forest_root_dc
+    domain: corp.lab
+    ip: 192.168.57.10
+    ram_mb: 4096
+    os: windows-server
+  - name: dc-corp2
+    hostname: DC-CORP2
+    role: replica_dc
+    domain: corp.lab
+    ip: 192.168.57.11
+    ram_mb: 4096
+    os: windows-server
+  - name: dc-partner
+    hostname: DC-PARTNER
+    role: forest_root_dc
+    domain: partner.lab
+    ip: 192.168.57.20
+    ram_mb: 4096
+    os: windows-server
+  - name: srv-corp
+    hostname: SRV-CORP
+    role: member_file
+    domain: corp.lab
+    ip: 192.168.57.30
+    ram_mb: 4096
+    os: windows-server
+  - name: ca-corp
+    hostname: CA-CORP
+    role: enterprise_ca
+    domain: corp.lab
+    ip: 192.168.57.40
+    ram_mb: 8192
+    os: windows-server
+  - name: win10-corp
+    hostname: WIN10-CORP
+    role: workstation
+    domain: corp.lab
+    ip: 192.168.57.50
+    ram_mb: 4096
+    os: windows-10
+  - name: kali-ad
+    hostname: kali
+    role: analyst
+    domain: null
+    ip: 192.168.57.100
+    ram_mb: 4096
+    disk_gb: 40
+    os: kali
