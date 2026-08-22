@@ -1,0 +1,17 @@
+<network>
+  <name>ad-lab</name>
+  <uuid>df76c8d5-30ce-43bf-a8f8-8724d57eb2e7</uuid>
+  <forward mode="nat">
+    <nat>
+      <port start="1024" end="65535"/>
+    </nat>
+  </forward>
+  <bridge name="virbr-ad" stp="on" delay="0"/>
+  <domain name="ad-lab"/>
+  <ip address="192.168.57.1" netmask="255.255.255.0">
+    <!-- Servers use static .10-.50. DHCP is only for first-boot / eval activation. -->
+    <dhcp>
+      <range start="192.168.57.128" end="192.168.57.250"/>
+    </dhcp>
+  </ip>
+</network>

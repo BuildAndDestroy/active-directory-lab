@@ -1,0 +1,11 @@
+creds
+creds.ps1
+00-creds.ps1
+manifest.txt
+config.env
+*.qcow2
+*.img
+*.iso
+*.raw
+.DS_Store
+*.swp

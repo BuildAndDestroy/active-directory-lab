@@ -1,0 +1,51 @@
+# Copy to 00-creds.ps1 (gitignored). Isolated lab only.
+
+$Lab = @{
+    LocalAdminPassword   = 'LabLocal!1'
+    SafeModeCorp         = 'LabRestore!1'
+    SafeModePartner      = 'LabRestore!1'
+
+    CorpDomain           = 'corp.lab'
+    CorpNetbios          = 'CORP'
+    CorpDns1             = '192.168.57.10'
+    CorpDns2             = '192.168.57.11'
+    Gateway              = '192.168.57.1'
+    PrefixLength         = 24
+
+    PartnerDomain        = 'partner.lab'
+    PartnerNetbios       = 'PARTNER'
+    PartnerDns           = '192.168.57.20'
+
+    JdoePassword         = 'Summer2020'
+    HadminPassword       = 'Winter2020'
+    SvcWebPassword       = 'Service123'
+    PuserPassword        = 'Autumn2020'
+    PadminPassword       = 'Spring2020'
+}
+
+function ConvertTo-LabSecureString {
+    param([Parameter(Mandatory)][string]$Plain)
+    ConvertTo-SecureString $Plain -AsPlainText -Force
+}
+
+function Get-LabLocalCredential {
+    param([string]$User = 'Administrator')
+    New-Object System.Management.Automation.PSCredential (
+        $User,
+        (ConvertTo-LabSecureString $Lab.LocalAdminPassword)
+    )
+}
+
+function Get-CorpDaCredential {
+    New-Object System.Management.Automation.PSCredential (
+        "$($Lab.CorpNetbios)\Administrator",
+        (ConvertTo-LabSecureString $Lab.LocalAdminPassword)
+    )
+}
+
+function Get-PartnerDaCredential {
+    New-Object System.Management.Automation.PSCredential (
+        "$($Lab.PartnerNetbios)\Administrator",
+        (ConvertTo-LabSecureString $Lab.LocalAdminPassword)
+    )
+}

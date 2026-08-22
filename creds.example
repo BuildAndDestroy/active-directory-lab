@@ -1,0 +1,25 @@
+# Isolated study lab only. Copy to creds (gitignored).
+# Do not reuse these values anywhere else.
+
+SAFE_MODE_CORP=LabRestore!1
+SAFE_MODE_PARTNER=LabRestore!1
+
+# Local Administrator on every Windows VM (set during OS setup)
+LOCAL_ADMIN=Administrator
+LOCAL_ADMIN_PASSWORD=LabLocal!1
+
+# corp.lab
+CORP_DOMAIN=corp.lab
+CORP_NETBIOS=CORP
+CORP_DA_USER=Administrator
+CORP_DA_PASSWORD=LabLocal!1
+
+JDOE_PASSWORD=Summer2020
+HADMIN_PASSWORD=Winter2020
+SVC_WEB_PASSWORD=Service123
+
+# partner.lab
+PARTNER_DOMAIN=partner.lab
+PARTNER_NETBIOS=PARTNER
+PUSER_PASSWORD=Autumn2020
+PADMIN_PASSWORD=Spring2020
