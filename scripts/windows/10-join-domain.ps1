@@ -14,6 +14,9 @@ if ($part.PartOfDomain) {
 
 if ($hostinfo.Forest -eq 'Partner') {
     Add-Computer -DomainName $Lab.PartnerDomain -Credential (Get-PartnerDaCredential) -Force
+} elseif ($hostinfo.Forest -eq 'Foothold') {
+    Add-Computer -DomainName $Lab.FootholdDomain -Server $Lab.FootholdDc1 `
+        -Credential (Get-FootholdDaCredential) -Force
 } else {
     Add-Computer -DomainName $Lab.CorpDomain -Credential (Get-CorpDaCredential) -Force
 }

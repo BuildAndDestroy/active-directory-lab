@@ -2,17 +2,23 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-XML="${ROOT}/network/ad-lab.xml"
 URI="${LIBVIRT_URI:-qemu:///system}"
 
-if virsh -c "$URI" net-info ad-lab >/dev/null 2>&1; then
-  echo "libvirt network ad-lab already exists"
-  virsh -c "$URI" net-info ad-lab
-  exit 0
-fi
+define_net() {
+  local name="$1" xml="$2" desc="$3"
+  if virsh -c "$URI" net-info "$name" >/dev/null 2>&1; then
+    echo "libvirt network $name already exists"
+    virsh -c "$URI" net-info "$name"
+    return 0
+  fi
+  virsh -c "$URI" net-define "$xml"
+  virsh -c "$URI" net-autostart "$name"
+  virsh -c "$URI" net-start "$name"
+  virsh -c "$URI" net-info "$name"
+  echo "Defined $desc"
+}
 
-virsh -c "$URI" net-define "$XML"
-virsh -c "$URI" net-autostart ad-lab
-virsh -c "$URI" net-start ad-lab
-virsh -c "$URI" net-info ad-lab
-echo "Defined NAT network ad-lab (192.168.57.0/24, no DHCP)"
+define_net ad-lab "${ROOT}/network/ad-lab.xml" \
+  "NAT network ad-lab (192.168.57.0/24)"
+define_net ad-lab-foothold "${ROOT}/network/ad-lab-foothold.xml" \
+  "isolated network ad-lab-foothold (192.168.58.0/24, no NAT)"

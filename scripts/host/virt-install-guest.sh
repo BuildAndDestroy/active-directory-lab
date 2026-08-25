@@ -13,18 +13,25 @@ fi
 URI="${LIBVIRT_URI:-qemu:///system}"
 DISK_POOL="${DISK_POOL:-/var/lib/libvirt/images/ad-kvm-lab}"
 NETWORK="${NETWORK:-ad-lab}"
+NETWORK_FOOTHOLD="${NETWORK_FOOTHOLD:-ad-lab-foothold}"
 WIN_SERVER_ISO="${WIN_SERVER_ISO:-}"
 WIN10_ISO="${WIN10_ISO:-}"
 KALI_ISO="${KALI_ISO:-}"
 VIRTIO_ISO="${VIRTIO_ISO:-}"
 
+# Fixed MACs so JUMP-CORP Windows scripts can bind the right static IPs.
+# First NIC = corp (ad-lab), second = foothold (ad-lab-foothold).
+JUMP_MAC_CORP="${JUMP_MAC_CORP:-52:54:00:57:00:60}"
+JUMP_MAC_FOOTHOLD="${JUMP_MAC_FOOTHOLD:-52:54:00:58:00:10}"
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") <guest>
 
-Guests: dc-corp dc-corp2 dc-partner srv-corp ca-corp win10-corp kali-ad
+Guests: dc-corp dc-corp2 dc-partner srv-corp ca-corp win10-corp jump-corp dc-foothold srv-foothold kali-ad
 
 Requires config.env ISO paths and a disk from create-disks.sh.
+jump-corp is dual-homed (ad-lab + ad-lab-foothold). kali-ad is on foothold only.
 EOF
   exit 1
 }
@@ -71,7 +78,6 @@ common=(
   --name "$GUEST"
   --cpu host-passthrough
   --vcpus 2
-  --network "network=${NETWORK},model=${nic_model}"
   --graphics spice
   --video qxl
   --channel unix,target_type=virtio,name=org.qemu.guest_agent.0
@@ -81,6 +87,7 @@ common=(
 case "$GUEST" in
   dc-corp|dc-corp2|dc-partner|srv-corp)
     [[ -n "$WIN_SERVER_ISO" && -f "$WIN_SERVER_ISO" ]] || { echo "set WIN_SERVER_ISO in config.env"; exit 1; }
+    common+=(--network "network=${NETWORK},model=${nic_model}")
     extra=(
       --memory 4096
       --os-variant win2k19
@@ -90,6 +97,7 @@ case "$GUEST" in
     ;;
   ca-corp)
     [[ -n "$WIN_SERVER_ISO" && -f "$WIN_SERVER_ISO" ]] || { echo "set WIN_SERVER_ISO in config.env"; exit 1; }
+    common+=(--network "network=${NETWORK},model=${nic_model}")
     extra=(
       --memory 8192
       --os-variant win2k19
@@ -99,6 +107,7 @@ case "$GUEST" in
     ;;
   win10-corp)
     [[ -n "$WIN10_ISO" && -f "$WIN10_ISO" ]] || { echo "set WIN10_ISO in config.env"; exit 1; }
+    common+=(--network "network=${NETWORK},model=${nic_model}")
     extra=(
       --memory 4096
       --os-variant win10
@@ -106,8 +115,45 @@ case "$GUEST" in
       --cdrom "$WIN10_ISO"
     )
     ;;
+  jump-corp)
+    [[ -n "$WIN_SERVER_ISO" && -f "$WIN_SERVER_ISO" ]] || { echo "set WIN_SERVER_ISO in config.env"; exit 1; }
+    # NIC order: corp first, foothold second (matched by MAC in 00-lab-config.ps1).
+    common+=(
+      --network "network=${NETWORK},model=${nic_model},mac=${JUMP_MAC_CORP}"
+      --network "network=${NETWORK_FOOTHOLD},model=${nic_model},mac=${JUMP_MAC_FOOTHOLD}"
+    )
+    extra=(
+      --memory 4096
+      --os-variant win2k19
+      --disk "path=${disk},format=qcow2,bus=${disk_bus},cache=writeback,discard=unmap,sparse=yes"
+      --cdrom "$WIN_SERVER_ISO"
+    )
+    ;;
+  dc-foothold)
+    [[ -n "$WIN_SERVER_ISO" && -f "$WIN_SERVER_ISO" ]] || { echo "set WIN_SERVER_ISO in config.env"; exit 1; }
+    common+=(--network "network=${NETWORK_FOOTHOLD},model=${nic_model}")
+    extra=(
+      --memory 4096
+      --os-variant win2k19
+      --disk "path=${disk},format=qcow2,bus=${disk_bus},cache=writeback,discard=unmap,sparse=yes"
+      --cdrom "$WIN_SERVER_ISO"
+    )
+    ;;
+  srv-foothold)
+    [[ -n "$WIN_SERVER_ISO" && -f "$WIN_SERVER_ISO" ]] || { echo "set WIN_SERVER_ISO in config.env"; exit 1; }
+    # Foothold only — initial vuln target; joins corp.lab during setup via temporary JUMP routing.
+    common+=(--network "network=${NETWORK_FOOTHOLD},model=${nic_model}")
+    extra=(
+      --memory 4096
+      --os-variant win2k19
+      --disk "path=${disk},format=qcow2,bus=${disk_bus},cache=writeback,discard=unmap,sparse=yes"
+      --cdrom "$WIN_SERVER_ISO"
+    )
+    ;;
   kali-ad)
     [[ -n "$KALI_ISO" && -f "$KALI_ISO" ]] || { echo "set KALI_ISO in config.env"; exit 1; }
+    # Foothold only — no direct path to corp AD without pivoting through JUMP-CORP.
+    common+=(--network "network=${NETWORK_FOOTHOLD},model=${nic_model}")
     extra=(
       --memory 4096
       --os-variant debian11

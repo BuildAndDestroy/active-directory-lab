@@ -35,4 +35,7 @@ create dc-partner 60G
 create srv-corp 60G
 create ca-corp 60G
 create win10-corp 60G
+create jump-corp 60G
+create dc-foothold 60G
+create srv-foothold 60G
 create kali-ad 40G
