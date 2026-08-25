@@ -1,0 +1,13 @@
+<network>
+  <name>ad-lab-foothold</name>
+  <uuid>e8a91b2c-4d5e-6f70-8192-a3b4c5d6e7f8</uuid>
+  <!-- Isolated: no NAT/forward. Only dual-homed guests (JUMP-CORP) bridge to ad-lab. -->
+  <bridge name="virbr-ad-fh" stp="on" delay="0"/>
+  <domain name="ad-lab-foothold"/>
+  <ip address="192.168.58.1" netmask="255.255.255.0">
+    <!-- DHCP for first-boot / script download only. Kali and JUMP use statics. -->
+    <dhcp>
+      <range start="192.168.58.128" end="192.168.58.250"/>
+    </dhcp>
+  </ip>
+</network>

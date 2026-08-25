@@ -3,6 +3,7 @@
 
 SAFE_MODE_CORP=LabRestore!1
 SAFE_MODE_PARTNER=LabRestore!1
+SAFE_MODE_FOOTHOLD=LabRestore!1
 
 # Local Administrator on every Windows VM (set during OS setup)
 LOCAL_ADMIN=Administrator
@@ -23,3 +24,9 @@ PARTNER_DOMAIN=partner.lab
 PARTNER_NETBIOS=PARTNER
 PUSER_PASSWORD=Autumn2020
 PADMIN_PASSWORD=Spring2020
+
+# foothold.lab (isolated subnet forest)
+FOOTHOLD_DOMAIN=foothold.lab
+FOOTHOLD_NETBIOS=FOOTHOLD
+FUSER_PASSWORD=Fall2020
+FADMIN_PASSWORD=Spring2021

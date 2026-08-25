@@ -1,11 +1,19 @@
 # Copy this tree to its own git repo. ISOs and disks stay on the hypervisor.
-network:
-  name: ad-lab
-  bridge: virbr-ad
-  mode: nat
-  cidr: 192.168.57.0/24
-  gateway: 192.168.57.1
-  dhcp: false
+networks:
+  - name: ad-lab
+    bridge: virbr-ad
+    mode: nat
+    cidr: 192.168.57.0/24
+    gateway: 192.168.57.1
+    dhcp_range: 192.168.57.128-250
+    role: corp_ad
+  - name: ad-lab-foothold
+    bridge: virbr-ad-fh
+    mode: isolated
+    cidr: 192.168.58.0/24
+    gateway: 192.168.58.1
+    dhcp_range: 192.168.58.128-250
+    role: foothold
 
 defaults:
   ram_mb: 4096
@@ -19,6 +27,7 @@ guests:
     hostname: DC-CORP
     role: forest_root_dc
     domain: corp.lab
+    network: ad-lab
     ip: 192.168.57.10
     ram_mb: 4096
     os: windows-server
@@ -26,6 +35,7 @@ guests:
     hostname: DC-CORP2
     role: replica_dc
     domain: corp.lab
+    network: ad-lab
     ip: 192.168.57.11
     ram_mb: 4096
     os: windows-server
@@ -33,6 +43,7 @@ guests:
     hostname: DC-PARTNER
     role: forest_root_dc
     domain: partner.lab
+    network: ad-lab
     ip: 192.168.57.20
     ram_mb: 4096
     os: windows-server
@@ -40,6 +51,7 @@ guests:
     hostname: SRV-CORP
     role: member_file
     domain: corp.lab
+    network: ad-lab
     ip: 192.168.57.30
     ram_mb: 4096
     os: windows-server
@@ -47,6 +59,7 @@ guests:
     hostname: CA-CORP
     role: enterprise_ca
     domain: corp.lab
+    network: ad-lab
     ip: 192.168.57.40
     ram_mb: 8192
     os: windows-server
@@ -54,14 +67,47 @@ guests:
     hostname: WIN10-CORP
     role: workstation
     domain: corp.lab
+    network: ad-lab
     ip: 192.168.57.50
     ram_mb: 4096
     os: windows-10
+  - name: jump-corp
+    hostname: JUMP-CORP
+    role: dual_homed_pivot
+    domain: foothold.lab
+    networks:
+      - name: ad-lab
+        ip: 192.168.57.60
+        mac: 52:54:00:57:00:60
+        gateway: 192.168.57.1
+      - name: ad-lab-foothold
+        ip: 192.168.58.10
+        mac: 52:54:00:58:00:10
+        gateway: null
+    ram_mb: 4096
+    os: windows-server
+  - name: dc-foothold
+    hostname: DC-FOOTHOLD
+    role: forest_root_dc
+    domain: foothold.lab
+    network: ad-lab-foothold
+    ip: 192.168.58.15
+    ram_mb: 4096
+    os: windows-server
+  - name: srv-foothold
+    hostname: SRV-FOOTHOLD
+    role: vulnerable_web
+    domain: foothold.lab
+    network: ad-lab-foothold
+    ip: 192.168.58.20
+    ram_mb: 4096
+    os: windows-server
   - name: kali-ad
     hostname: kali
     role: analyst
     domain: null
-    ip: 192.168.57.100
+    network: ad-lab-foothold
+    ip: 192.168.58.100
     ram_mb: 4096
     disk_gb: 40
     os: kali

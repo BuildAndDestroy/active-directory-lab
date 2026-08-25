@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Serve scripts/windows to guests at http://192.168.57.1:8080
+# Serve scripts/windows to guests on both lab bridges (corp + foothold).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DIR="${ROOT}/scripts/windows"
-BIND="${BIND:-192.168.57.1}"
+# 0.0.0.0 so both 192.168.57.1 and 192.168.58.1 work as the download URL.
+BIND="${BIND:-0.0.0.0}"
 PORT="${PORT:-8080}"
 
 cd "$DIR"
@@ -14,8 +15,9 @@ cd "$DIR"
 } > manifest.txt
 
 echo "Serving ${DIR} on http://${BIND}:${PORT}/"
-echo "On the Windows VM:"
-echo "  Set-ExecutionPolicy Bypass -Scope Process -Force"
-echo "  irm http://${BIND}:${PORT}/00-download.ps1 | iex"
+echo "On corp (.57) Windows VMs:"
+echo "  irm http://192.168.57.1:${PORT}/00-download.ps1 | iex"
+echo "On JUMP-CORP / foothold (.58) guests:"
+echo "  irm http://192.168.58.1:${PORT}/00-download.ps1 | iex"
 echo "Ctrl-C to stop."
 exec python3 -m http.server "$PORT" --bind "$BIND"

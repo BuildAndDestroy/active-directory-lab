@@ -1,7 +1,10 @@
 # First-boot: set hostname and static IP from -Role. Reboots if the name changed.
 #   .\00-bootstrap.ps1 -Role DC-CORP
+#   .\00-bootstrap.ps1 -Role JUMP-CORP
 param(
-    [Parameter(Mandatory)][ValidateSet('DC-CORP','DC-CORP2','DC-PARTNER','SRV-CORP','CA-CORP','WIN10-CORP')]
+    [Parameter(Mandatory)][ValidateSet(
+        'DC-CORP','DC-CORP2','DC-PARTNER','DC-FOOTHOLD','SRV-CORP','CA-CORP','WIN10-CORP','JUMP-CORP','SRV-FOOTHOLD'
+    )]
     [string]$Role,
     [switch]$NoReboot
 )
